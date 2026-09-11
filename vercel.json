@@ -1,0 +1,82 @@
+{
+  "version": 2,
+  "regions": [
+    "iad1"
+  ],
+  "builds": [
+    {
+      "src": "api/model.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/agent.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "js/*.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "manifest.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "service-worker.js",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "IMG_6101.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "logo.png",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/agent/(.*)",
+      "dest": "/api/agent.js"
+    },
+    {
+      "src": "/api/agent",
+      "dest": "/api/agent.js"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/model.js"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/service-worker.js",
+      "dest": "/service-worker.js"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/IMG_6101.png",
+      "dest": "/IMG_6101.png"
+    },
+    {
+      "src": "/logo.png",
+      "dest": "/logo.png"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/(.*\\.html)",
+      "dest": "/$1"
+    }
+  ]
+}
