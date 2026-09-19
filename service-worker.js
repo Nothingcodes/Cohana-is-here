@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cohana-cache-v6.4H7';
+const CACHE_NAME = 'cohana-cache-v6.5H2';
 const urlsToCache = [
   '/',
   '/index.html',
