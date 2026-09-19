@@ -122,7 +122,12 @@ function getMessageText(msg) {
 window.copyFileDownloadLink = async function(url, buttonEl) {
     if (!url) return;
     try {
-        await navigator.clipboard.writeText(url);
+        const absoluteUrl = url.startsWith('http') ?
+            url :
+            `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
+        
+        await navigator.clipboard.writeText(absoluteUrl);
+        
         if (buttonEl) {
             const icon = buttonEl.querySelector('i');
             if (icon) icon.className = 'fa-solid fa-check';
@@ -285,136 +290,40 @@ renderFileCardHtml(data) {
             break;
     }
     
-    return `
-        <div class="cohana-file-card" style="
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 18px;
-            padding: 14px 18px;
-            margin: 12px 0;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            user-select: none;
-        ">
-            <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
-                <div style="
-                    width: 46px;
-                    height: 46px;
-                    border-radius: 13px;
-                    background: ${accentColor}18;
-                    border: 1px solid ${accentColor}33;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                    color: ${accentColor};
-                    font-size: 22px;
-                    box-shadow: 0 4px 12px ${accentColor}22;
-                ">
-                    <i class="${iconClass}"></i>
-                </div>
-                <div style="min-width: 0; flex: 1;">
-                    <div style="
-                        font-size: 14.5px;
-                        font-weight: 600;
-                        color: #ffffff;
-                        letter-spacing: -0.01em;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        line-height: 1.3;
-                    " title="${safeFileName}">
-                        ${safeFileName}
-                    </div>
-                    <div style="
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        margin-top: 4px;
-                        font-size: 12px;
-                        color: rgba(255, 255, 255, 0.55);
-                        font-weight: 500;
-                    ">
-                        <span style="
-                            display: inline-block;
-                            padding: 1px 6px;
-                            border-radius: 6px;
-                            background: rgba(255, 255, 255, 0.08);
-                            color: ${accentColor};
-                            font-weight: 600;
-                            font-size: 11px;
-                        ">${badgeText}</span>
-                        ${formattedSize ? `<span>•</span><span>${formattedSize}</span>` : ''}
-                        <span style="display: inline-flex; align-items: center; gap: 4px; color: #30d158; font-size: 11px;">
-                            <i class="fa-solid fa-circle-check" style="font-size: 10px;"></i> Ready
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                ${fileUrl ? `
-                <button
-                    onclick="window.copyFileDownloadLink && window.copyFileDownloadLink('${encodeURI(fileUrl)}', this)"
-                    title="Copy download link"
-                    style="
-                        width: 36px;
-                        height: 36px;
-                        border-radius: 11px;
-                        background: rgba(255, 255, 255, 0.06);
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        color: rgba(255, 255, 255, 0.75);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        font-size: 14px;
-                        transition: all 0.2s ease;
-                    "
-                    onmouseover="this.style.background='rgba(255, 255, 255, 0.12)'; this.style.color='#ffffff';"
-                    onmouseout="this.style.background='rgba(255, 255, 255, 0.06)'; this.style.color='rgba(255, 255, 255, 0.75)';"
-                >
-                    <i class="fa-regular fa-copy"></i>
-                </button>
-                ` : ''}
-                ${fileUrl ? `
-                <a
-                    href="${fileUrl}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download="${safeFileName}"
-                    style="
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 7px;
-                        background: linear-gradient(135deg, #0071e3 0%, #0077ed 100%);
-                        color: #ffffff;
-                        padding: 8px 16px;
-                        border-radius: 12px;
-                        font-size: 13px;
-                        font-weight: 600;
-                        text-decoration: none;
-                        border: 1px solid rgba(255, 255, 255, 0.18);
-                        box-shadow: 0 4px 14px rgba(0, 113, 227, 0.38);
-                        cursor: pointer;
-                        transition: transform 0.15s ease, box-shadow 0.15s ease;
-                    "
-                    onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 6px 18px rgba(0, 113, 227, 0.48)';"
-                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 14px rgba(0, 113, 227, 0.38)';"
-                >
-                    <i class="fa-solid fa-arrow-down" style="font-size: 12px;"></i>
-                    <span>Download</span>
-                </a>
-                ` : ''}
-            </div>
-        </div>
-    `;
+    const encodedFileUrl = fileUrl ? encodeURI(fileUrl) : '';
+    
+    const html = `
+<div class="cohana-file-card" style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);border:1px solid rgba(255,255,255,0.12);box-shadow:0 12px 32px -8px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.08);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:18px;padding:14px 18px;margin:12px 0;user-select:none;">
+<div style="display:flex;align-items:center;gap:14px;min-width:0;flex:1;">
+<div style="width:46px;height:46px;border-radius:13px;background:${accentColor}18;border:1px solid ${accentColor}33;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:${accentColor};font-size:22px;box-shadow:0 4px 12px ${accentColor}22;">
+<i class="${iconClass}"></i>
+</div>
+<div style="min-width:0;flex:1;">
+<div style="font-size:14.5px;font-weight:600;color:#ffffff;letter-spacing:-0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;" title="${safeFileName}">
+${safeFileName}
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px;color:rgba(255,255,255,0.55);font-weight:500;">
+<span style="display:inline-block;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,0.08);color:${accentColor};font-weight:600;font-size:11px;">${badgeText}</span>
+${formattedSize ? `<span>•</span><span>${formattedSize}</span>` : ''}
+<span style="display:inline-flex;align-items:center;gap:4px;color:#30d158;font-size:11px;">
+<i class="fa-solid fa-circle-check" style="font-size:10px;"></i> Ready
+</span>
+</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+${encodedFileUrl ? `
+<button onclick="window.copyFileDownloadLink && window.copyFileDownloadLink('${encodedFileUrl}', this)" title="Copy download link" style="width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.2s ease;">
+<i class="fa-regular fa-copy"></i>
+</button>
+<a href="${encodedFileUrl}" target="_blank" rel="noopener noreferrer" download="${safeFileName}" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#0071e3 0%,#0077ed 100%);color:#ffffff;padding:8px 16px;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,0.18);box-shadow:0 4px 14px rgba(0,113,227,0.38);cursor:pointer;">
+<i class="fa-solid fa-arrow-down" style="font-size:12px;"></i>
+<span>Download</span>
+</a>` : ''}
+</div>
+</div>`.replace(/\n\s*/g, ' ').trim();
+    
+    return html;
 },
 startEditMessage(targetWrapper, text) {
     if (State.isStreaming) return;
@@ -1517,14 +1426,10 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
     const chat = State.chatHistories[State.currentChatIndex];
     const selectedRepo = this.getSelectedRepository();
     
-    // Use repository's environment ID if one exists, or chat's environment ID
     const targetEnvId = selectedRepo ? (selectedRepo.environmentId || '') : (chat?.environmentId || '');
     
-    // Check 24-hour expiration for storage retention
     const ONE_DAY_MS = 24 * 60 * 60 * 1000;
     const isExpired = !chat?.lastActive || (Date.now() - chat.lastActive > ONE_DAY_MS);
-    
-    // Chain previousInteractionId if valid and not expired
     const previousId = (!isExpired && chat?.interactionId) ? chat.interactionId : '';
 
     const formData = new FormData();
@@ -1537,7 +1442,6 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
         formData.append('environment_id', targetEnvId);
     }
     
-    // Lock the agent selected for this conversation so orchestrator does not re-run
     if (chat?.agent) {
         formData.append('agent', chat.agent);
     }
@@ -1578,7 +1482,6 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
         formData.append('rawMemories', JSON.stringify(State.memories));
     }
 
-    // For a brand new turn, interactionId is null; previousInteractionId chains state
     const internalState = {
         previousInteractionId: previousId || null,
         interactionId: null,
@@ -1615,6 +1518,7 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
     let thoughtBuffer = '';
     let thoughtTimeline = [];
     let hasInitializedBotMessage = false;
+    const renderedFileKeys = new Set();
 
     const ensureBotMessage = () => {
         if (hasInitializedBotMessage) return;
@@ -1642,6 +1546,19 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
         }
         targetChat.lastActive = Date.now();
         this.saveChatHistories();
+    };
+
+    const handleRenderFile = (data) => {
+        const key = data?.url || data?.path || data?.filename;
+        if (!key || renderedFileKeys.has(key)) return;
+        renderedFileKeys.add(key);
+
+        ensureBotMessage();
+        const cardHtml = this.renderFileCardHtml(data);
+        UI.addMessageToChat('bot', cardHtml, null, null, false);
+        if (!State.isTemporaryChat) {
+            this.addToMessageHistory('assistant', cardHtml);
+        }
     };
 
     await API.agent(
@@ -1914,23 +1831,8 @@ async runAgent(prompt, attachments = null, userPlanFeedback = null, signal = nul
                 UI.updateLastBotMessage({ timeline: thoughtTimeline, text: thoughtBuffer }, 'thought');
             },
 
-            onFile: (data) => {
-                ensureBotMessage();
-                const cardHtml = this.renderFileCardHtml(data);
-                UI.addMessageToChat('bot', cardHtml, null, null, false);
-                if (!State.isTemporaryChat) {
-                    this.addToMessageHistory('assistant', cardHtml);
-                }
-            },
-
-            onFileShared: (data) => {
-                ensureBotMessage();
-                const cardHtml = this.renderFileCardHtml(data);
-                UI.addMessageToChat('bot', cardHtml, null, null, false);
-                if (!State.isTemporaryChat) {
-                    this.addToMessageHistory('assistant', cardHtml);
-                }
-            },
+            onFile: handleRenderFile,
+            onFileShared: handleRenderFile,
 
             onError: (error) => {
                 UI.hideSkeletonLoader();
@@ -2054,6 +1956,7 @@ async resumeBrowserAgent(userReportText = '') {
     let thoughtBuffer = '';
     let thoughtTimeline = [];
     let hasInitializedBotMessage = false;
+    const renderedFileKeys = new Set();
 
     const ensureBotMessage = () => {
         if (hasInitializedBotMessage) return;
@@ -2302,23 +2205,12 @@ async resumeBrowserAgent(userReportText = '') {
                 },
 
                 onFileShared: (data) => {
+                    const key = data?.url || data?.path || data?.filename;
+                    if (key && renderedFileKeys.has(key)) return;
+                    if (key) renderedFileKeys.add(key);
+
                     ensureBotMessage();
-                    const fileName = data?.filename || data?.fileName || 'download';
-                    const fileUrl = data?.url || '';
-
-                    const safeFileName = UI.escapeHTML ? UI.escapeHTML(fileName) : fileName;
-                    const fileHtml = `
-                        <div class="shared-file-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);padding:12px 16px;border-radius:14px;margin-top:10px;">
-                            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-                                <i class="fas fa-file-arrow-down" style="color:#ffffff;font-size:20px;flex-shrink:0;opacity:0.8;"></i>
-                                <span style="font-weight:600;font-size:14px;color:#ffffff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                                    ${safeFileName}
-                                </span>
-                            </div>
-                            ${fileUrl ? `<a href="${fileUrl}" target="_blank" rel="noopener noreferrer" download style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);color:#fff;text-decoration:none;padding:6px 14px;border-radius:16px;font-size:13px;font-weight:600;flex-shrink:0;">Download</a>` : ''}
-                        </div>
-                    `;
-
+                    const fileHtml = this.renderFileCardHtml(data);
                     UI.addMessageToChat('bot', fileHtml, null, null, false);
                     if (!State.isTemporaryChat) {
                         this.addToMessageHistory('assistant', fileHtml);

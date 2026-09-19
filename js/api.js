@@ -295,7 +295,6 @@ async agent(formData, callbacks, internalState = null) {
             let isInteractionIncomplete = false;
             
             if (resumeRequest) {
-                // Reconnecting to the exact same background interaction and environment
                 if (internalState?.interactionId) {
                     currentFormData.set('interaction_id', internalState.interactionId);
                 }
@@ -309,8 +308,11 @@ async agent(formData, callbacks, internalState = null) {
                     currentFormData.set('last_event_id', internalState.lastEventId);
                 }
                 currentFormData.set('resume', 'true');
+                
+                ['image', 'image_1', 'image_2', 'image_3', 'image_4', 'file', 'file_1', 'file_2', 'file_3', 'file_4'].forEach(key => {
+                    currentFormData.delete(key);
+                });
             } else {
-                // Starting a new turn: purge resume-specific parameters
                 currentFormData.delete('interaction_id');
                 currentFormData.delete('last_event_id');
                 currentFormData.delete('resume');
@@ -327,11 +329,24 @@ async agent(formData, callbacks, internalState = null) {
                 currentFormData.set('memoryEnabled', String(this._isMemoryEnabled()));
             }
             
-            const response = await fetch('/api/agent', {
-                method: 'POST',
-                body: currentFormData,
-                signal: callbacks?.signal
-            });
+            let response = null;
+            let retryCount = 0;
+            const maxNetworkRetries = 5;
+            
+            while (!response && retryCount < maxNetworkRetries && !callbacks?.signal?.aborted) {
+                try {
+                    response = await fetch('/api/agent', {
+                        method: 'POST',
+                        body: currentFormData,
+                        signal: callbacks?.signal
+                    });
+                } catch (fetchErr) {
+                    if (callbacks?.signal?.aborted) throw fetchErr;
+                    retryCount++;
+                    if (retryCount >= maxNetworkRetries) throw fetchErr;
+                    await new Promise(resolve => setTimeout(resolve, Math.min(4000, 1000 * Math.pow(1.5, retryCount))));
+                }
+            }
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -486,8 +501,11 @@ async agent(formData, callbacks, internalState = null) {
                             
                         case 'file_shared':
                         case 'file':
-                            callbacks?.onFileShared?.(data);
-                            callbacks?.onFile?.(data);
+                            if (callbacks?.onFileShared) {
+                                callbacks.onFileShared(data);
+                            } else if (callbacks?.onFile) {
+                                callbacks.onFile(data);
+                            }
                             break;
                             
                         case 'file_share_error':
@@ -513,7 +531,6 @@ async agent(formData, callbacks, internalState = null) {
                 callbacks?.signal
             );
             
-            // Seamlessly reconnect on 300-second stream timeouts or budget continuations
             if (receivedTimeout && !callbacks?.signal?.aborted) {
                 shouldResume = true;
                 resumeRequest = true;
